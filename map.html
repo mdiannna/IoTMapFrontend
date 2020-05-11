@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+
+
+<h2>Light map:</h2>
+<canvas id="lightCanvas" width="450" height="300" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<span style="width:100px; display: inline-block;">	</span>
+
+<h2>Temperature map:</h2>
+<canvas id="temperatureCanvas" width="450" height="300" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+</body>
+<script type="text/javascript">
+
+data = [{"boxId": 1, "sensorType": "Light" ,"sensorValue": 0.10},
+{"boxId": 2, "sensorType": "Light" ,"sensorValue": 0.20},
+{"boxId": 3, "sensorType": "Light" ,"sensorValue": 0.30},
+{"boxId": 4, "sensorType": "Light" ,"sensorValue": 0.40},
+{"boxId": 5, "sensorType": "Light" ,"sensorValue": 0.50},
+{"boxId": 6, "sensorType": "Light" ,"sensorValue": 0.60},
+{"boxId": 7, "sensorType": "Light" ,"sensorValue": 0.70},
+{"boxId": 7, "sensorType": "Temperature" ,"sensorValue": 0.70},
+{"boxId": 1, "sensorType": "Temperature" ,"sensorValue": 0.70},
+{"boxId": 3, "sensorType": "Temperature" ,"sensorValue": 20},
+{"boxId": 2, "sensorType": "Temperature" ,"sensorValue": 29},
+{"boxId": 5, "sensorType": "Temperature" ,"sensorValue": 45},
+{"boxId": 6, "sensorType": "Temperature" ,"sensorValue": 45},
+{"boxId": 4, "sensorType": "Temperature" ,"sensorValue": 25},
+{"boxId": 8, "sensorType": "Temperature" ,"sensorValue": 25},
+{"boxId": 9, "sensorType": "Temperature" ,"sensorValue": 26},
+
+{"boxId": 8, "sensorType": "Light" ,"sensorValue": 0.80},
+{"boxId": 9, "sensorType": "Light" ,"sensorValue": 0.90}];
+
+MIN_MAP = {
+	"Light": 0,
+	"Gas": 0,
+	"Dust": 0,
+	"Temperature": 0,
+	"Humidity": 0,
+};
+
+MAX_MAP = {
+	"Light": 1,
+	"Gas": 2000,
+	"Dust": 10,
+	"Temperature": 45		,
+	"Humidity": 20,
+};
+
+
+var x = 150;
+var y = 100;
+
+var NR_RECTANGLES = 9;
+
+var rectanglesLight = [
+    [0, 0, x, y, 'rect0'],
+    [0, y, x, y, 'rect1'],
+    [0, y*2, x, y, 'rect2'],
+    [x, 0, x, y, 'rect3'],
+    [x, y, x, y, 'rect4'],
+    [x, y*2, x, y, 'rect5'],
+    [x*2, 0, x, y, 'rect6'],
+    [x*2, y, x, y, 'rect7'],
+    [x*2, y*2, x,  y, 'rect8'],
+];
+
+
+var rectanglesTemperature = [
+    [0, 0, x, y, 'rect0'],
+    [0, y, x, y, 'rect1'],
+    [0, y*2, x, y, 'rect2'],
+    [x, 0, x, y, 'rect3'],
+    [x, y, x, y, 'rect4'],
+    [x, y*2, x, y, 'rect5'],
+    [x*2, 0, x, y, 'rect6'],
+    [x*2, y, x, y, 'rect7'],
+    [x*2, y*2, x,  y, 'rect8'],
+];
+
+function colorRectangle(canvasId, rects, j, color) {
+	console.log("COLOR RECTANGLE!" + j + "   " + color);
+	var c = document.getElementById(canvasId);
+	var ctx = c.getContext("2d");
+
+
+	ctx.fillStyle = color;
+	ctx.fillRect(rects[j][0],
+	// ctx.rect(rects[j][0],
+        rects[j][1],
+        rects[j][2],
+        rects[j][3]);
+	ctx.fillStyle = color;
+	// ctx.fill();
+	ctx.stroke();
+}
+
+function InitRectangles(canvasId,rects) {
+	for (var j = 0; j < NR_RECTANGLES; j++) {
+		// var color = randomColor();
+		var color = "#F2F2F2";
+        colorRectangle(canvasId, rects, j, color);
+    }
+}
+
+function perc2color(perc) {
+	var r, g, b = 0;
+	if(perc < 50) {
+		g = 255;
+		r = Math.round(5.1 * perc);
+	}
+	else {
+		r = 255;
+		g = Math.round(510 - 5.10 * perc);
+	}
+	var h = r * 0x10000 + g * 0x100 + b * 0x1;
+	return '#' + ('000000' + h.toString(16)).slice(-6);
+}
+
+
+// var n=3;
+// if(rects[n][4]=='rect3'){ alert('I have the id==rect3'); }
+
+
+
+function SensorValToPercents(value, min, max) {
+	var division = 100/(max-min);
+	return value*division + min;
+}
+
+function ColorMapFromData(canvasId,rects, dataObj, sensorTypeSelected) {
+	for(var i=0; i<data.length; i++) {
+		var sensorType = dataObj[i].sensorType;
+		if(sensorTypeSelected===sensorType) {
+			value = SensorValToPercents(dataObj[i].sensorValue, MIN_MAP[sensorType], MAX_MAP[sensorType]);
+			colorRectangle(canvasId,rects,dataObj[i].boxId-1, perc2color(value));
+		}
+	}
+}
+
+InitRectangles("lightCanvas",rectanglesLight);
+ColorMapFromData("lightCanvas", rectanglesLight, data, "Light");
+
+InitRectangles("temperatureCanvas",rectanglesTemperature);
+ColorMapFromData("temperatureCanvas", rectanglesLight, data, "Temperature");
+
+
+</script>
+</html>
